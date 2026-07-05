@@ -100,7 +100,9 @@ class _MapScreenState extends State<MapScreen> {
 
   StreamSubscription<Position>? _positionStream;
   bool _isLoading = false;
+  bool _showSearchPanel = true;
   bool _isNavigating = false;
+  bool _isBottomPanelExpanded = true;
   double _remainingDistance = 0;
 
   final TextEditingController fromController = TextEditingController();
@@ -506,264 +508,286 @@ class _MapScreenState extends State<MapScreen> {
           ),
 
           // Top Search Panel
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: EdgeInsets.all(isMobile ? 10 : 16),
-                child: Container(
-                  width: isMobile ? double.infinity : 500,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 15,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // From Field
-                        TypeAheadField<LocationSuggestion>(
-                          controller: fromController,
-                          builder: (context, controller, focusNode) {
-                            return TextField(
-                              controller: controller,
-                              focusNode: focusNode,
-                              decoration: InputDecoration(
-                                hintText: 'Starting location',
-                                hintStyle: TextStyle(color: Colors.grey[400]),
-                                prefixIcon: const Icon(
-                                  Icons.location_on,
-                                  color: Colors.green,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 14,
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey[50],
-                              ),
-                            );
-                          },
-                          suggestionsCallback: (search) async {
-                            if (search.isEmpty) return [];
-                            return await _getLocationSuggestions(search);
-                          },
-                          itemBuilder: (context, suggestion) => Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(color: Colors.grey[200]!),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  suggestion.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${suggestion.location.latitude.toStringAsFixed(3)}, ${suggestion.location.longitude.toStringAsFixed(3)}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[500],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          onSelected: (suggestion) {
-                            fromController.text = suggestion.name;
-                          },
-                          hideOnEmpty: true,
-                          debounceDuration: const Duration(milliseconds: 300),
-
-                          loadingBuilder: (context) => const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // To Field with Swap
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TypeAheadField<LocationSuggestion>(
-                                controller: toController,
-                                builder: (context, controller, focusNode) {
-                                  return TextField(
-                                    controller: controller,
-                                    focusNode: focusNode,
-                                    decoration: InputDecoration(
-                                      hintText: 'Destination',
-                                      hintStyle: TextStyle(
-                                        color: Colors.grey[400],
-                                      ),
-                                      prefixIcon: const Icon(
-                                        Icons.flag,
-                                        color: Colors.red,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
-                                        ),
-                                      ),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 14,
-                                          ),
-                                      filled: true,
-                                      fillColor: Colors.grey[50],
-                                    ),
-                                  );
-                                },
-                                suggestionsCallback: (search) async {
-                                  if (search.isEmpty) return [];
-                                  return await _getLocationSuggestions(search);
-                                },
-                                itemBuilder: (context, suggestion) => Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: Colors.grey[200]!,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        suggestion.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${suggestion.location.latitude.toStringAsFixed(3)}, ${suggestion.location.longitude.toStringAsFixed(3)}',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                onSelected: (suggestion) {
-                                  toController.text = suggestion.name;
-                                },
-                                hideOnEmpty: true,
-                                debounceDuration: const Duration(
-                                  milliseconds: 300,
-                                ),
-
-                                loadingBuilder: (context) => const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey[300]!),
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.swap_vert,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: _swapLocations,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        // Get Route Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _isLoading ? null : _getRoute,
-                            icon: _isLoading
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : const Icon(Icons.directions),
-                            label: Text(
-                              _isLoading ? 'Searching...' : 'Get Route',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
+          if (_showSearchPanel)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: EdgeInsets.all(isMobile ? 10 : 16),
+                  child: Container(
+                    width: isMobile ? double.infinity : 500,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 15,
+                          spreadRadius: 2,
                         ),
                       ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // From Field
+                          TypeAheadField<LocationSuggestion>(
+                            controller: fromController,
+                            builder: (context, controller, focusNode) {
+                              return TextField(
+                                controller: controller,
+                                focusNode: focusNode,
+                                decoration: InputDecoration(
+                                  hintText: 'Starting location',
+                                  hintStyle: TextStyle(color: Colors.grey[400]),
+                                  prefixIcon: const Icon(
+                                    Icons.location_on,
+                                    color: Colors.green,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 14,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                              );
+                            },
+                            suggestionsCallback: (search) async {
+                              if (search.isEmpty) return [];
+                              return await _getLocationSuggestions(search);
+                            },
+                            itemBuilder: (context, suggestion) => Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: Colors.grey[200]!),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    suggestion.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${suggestion.location.latitude.toStringAsFixed(3)}, ${suggestion.location.longitude.toStringAsFixed(3)}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onSelected: (suggestion) {
+                              fromController.text = suggestion.name;
+                            },
+                            hideOnEmpty: true,
+                            debounceDuration: const Duration(milliseconds: 300),
+
+                            loadingBuilder: (context) => const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // To Field with Swap
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TypeAheadField<LocationSuggestion>(
+                                  controller: toController,
+                                  builder: (context, controller, focusNode) {
+                                    return TextField(
+                                      controller: controller,
+                                      focusNode: focusNode,
+                                      decoration: InputDecoration(
+                                        hintText: 'Destination',
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey[400],
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.flag,
+                                          color: Colors.red,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey[300]!,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey[300]!,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 14,
+                                            ),
+                                        filled: true,
+                                        fillColor: Colors.grey[50],
+                                      ),
+                                    );
+                                  },
+                                  suggestionsCallback: (search) async {
+                                    if (search.isEmpty) return [];
+                                    return await _getLocationSuggestions(
+                                      search,
+                                    );
+                                  },
+                                  itemBuilder: (context, suggestion) => Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Colors.grey[200]!,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          suggestion.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${suggestion.location.latitude.toStringAsFixed(3)}, ${suggestion.location.longitude.toStringAsFixed(3)}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  onSelected: (suggestion) {
+                                    toController.text = suggestion.name;
+                                  },
+                                  hideOnEmpty: true,
+                                  debounceDuration: const Duration(
+                                    milliseconds: 300,
+                                  ),
+
+                                  loadingBuilder: (context) => const Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.swap_vert,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: _swapLocations,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          // Get Route Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () async {
+                                      await _getRoute();
+
+                                      if (routeOptions.isNotEmpty) {
+                                        setState(() {
+                                          _showSearchPanel = false;
+                                        });
+                                      }
+                                    },
+                              icon: _isLoading
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    )
+                                  : const Icon(Icons.directions),
+                              label: Text(
+                                _isLoading ? 'Searching...' : 'Get Route',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
 
           // Bottom Route Options Panel
           if (routeOptions.isNotEmpty && selectedRoute != null)
@@ -852,9 +876,14 @@ class _MapScreenState extends State<MapScreen> {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      setState(
-                                        () => _isNavigating = !_isNavigating,
-                                      );
+                                      setState(() {
+                                        _isNavigating = !_isNavigating;
+
+                                        if (_isNavigating) {
+                                          _isBottomPanelExpanded = false;
+                                        }
+                                      });
+
                                       if (_isNavigating) {
                                         ScaffoldMessenger.of(
                                           context,
@@ -895,7 +924,13 @@ class _MapScreenState extends State<MapScreen> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: ElevatedButton(
-                                    onPressed: _clearRoute,
+                                    onPressed: () {
+                                      _clearRoute();
+
+                                      setState(() {
+                                        _showSearchPanel = true;
+                                      });
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.grey[300],
                                       foregroundColor: Colors.grey[700],

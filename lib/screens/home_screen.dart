@@ -4,6 +4,7 @@ import '../models/place_item.dart';
 import 'map_screen.dart';
 import 'place_detail_screen.dart';
 import '../ai/widgets/floating_ai_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -50,19 +51,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onNavTap(int idx) {
-    if (idx == 0 || idx == 1) {
-      setState(() => _selectedIndex = idx);
-      return;
-    }
-
     switch (idx) {
+      case 0:
+        setState(() => _selectedIndex = 0);
+        break;
+
+      case 1:
+        Navigator.pushNamed(context, '/tickets');
+        break;
+
       case 2:
-        Navigator.pushNamed(context, '/destinations');
+        Navigator.pushNamed(context, '/emergency');
         break;
+
       case 3:
-        Navigator.pushNamed(context, '/profile');
-        break;
-      default:
+        Navigator.pushNamed(context, '/help');
         break;
     }
   }
@@ -93,26 +96,28 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, '/destinations'),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        height: 54,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 6,
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
-          children: const [
-            Icon(Icons.search, color: Colors.black45),
-            SizedBox(width: 8),
+        child: const Row(
+          children: [
+            Icon(Icons.search, size: 24, color: Colors.blue),
+            SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Explore now',
-                style: TextStyle(color: Colors.black45),
+                "Search destinations, hotels, restaurants...",
+                style: TextStyle(color: Colors.grey, fontSize: 15),
               ),
             ),
           ],
@@ -141,7 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingAIButton(),
+      floatingActionButton: Transform.scale(
+        scale: 0.82,
+        child: FloatingAIButton(),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       // 🔥 MAIN CHANGE HERE
       body: _selectedIndex == 1
@@ -170,8 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         IconButton(
                           onPressed: () =>
-                              Navigator.pushReplacementNamed(context, '/login'),
-                          icon: const Icon(Icons.logout),
+                              Navigator.pushNamed(context, '/profile'),
+                          icon: const Icon(Icons.person_outline),
                         ),
                       ],
                     ),
@@ -201,11 +209,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/map');
+                          },
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 22,
+                                backgroundColor: Colors.blue.withOpacity(0.1),
+                                child: const Icon(
+                                  Icons.navigation,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                "Navigate",
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
                         _buildCategory(Icons.hotel, 'Hotel'),
-                        _buildCategory(Icons.place, 'Destination'),
                         _buildCategory(Icons.fastfood, 'Food'),
                         _buildCategory(Icons.translate, 'Translate'),
-                        _buildCategory(Icons.confirmation_num, 'Tickets'),
                       ],
                     ),
                   ),
@@ -242,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 18),
 
                             const Text(
-                              'Explore Nepal again',
+                              'Recommended Near You',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -270,18 +298,79 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
         currentIndex: _selectedIndex,
         onTap: _onNavTap,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.black54,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Discover',
-          ), // 🔥 changed icon
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.confirmation_num_outlined),
+            activeIcon: Icon(Icons.confirmation_num),
+            label: 'Tickets',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.emergency_outlined),
+            activeIcon: Icon(Icons.emergency),
+            label: 'SOS',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.support_agent_outlined),
+            activeIcon: Icon(Icons.support_agent),
+            label: 'Help',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emergencyButton(String title, IconData icon, String number) {
+    return InkWell(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Emergency"),
+            content: Text("Call $title ($number)?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+
+                  final Uri phone = Uri(scheme: 'tel', path: number);
+
+                  if (await canLaunchUrl(phone)) {
+                    await launchUrl(phone);
+                  }
+                },
+                child: const Text("Call"),
+              ),
+            ],
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: Colors.red.shade100,
+            child: Icon(icon, color: Colors.red),
+          ),
+          const SizedBox(height: 6),
+          Text(title, style: const TextStyle(fontSize: 12)),
         ],
       ),
     );

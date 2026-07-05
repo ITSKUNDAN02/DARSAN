@@ -39,10 +39,19 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     final reply = await _gemini.sendMessage(text);
 
+    if (!mounted) return;
+
     setState(() {
       _messages.add(ChatMessage(text: reply, isUser: false));
       _loading = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scroll.dispose();
+    super.dispose();
   }
 
   Widget bubble(ChatMessage msg) {

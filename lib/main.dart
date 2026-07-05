@@ -10,6 +10,8 @@ import 'screens/profile_screen.dart';
 import 'screens/translate_screen.dart';
 import 'screens/tickets_screen.dart';
 import 'services/auth_service.dart';
+import 'screens/emergency_screen.dart';
+import 'screens/help_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,6 +42,9 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfileScreen(),
         '/translate': (context) => const TranslateScreen(),
         '/tickets': (context) => const TicketsScreen(),
+
+        '/emergency': (context) => EmergencyScreen(),
+        '/help': (context) => HelpScreen(),
       },
     );
   }
@@ -70,8 +75,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
