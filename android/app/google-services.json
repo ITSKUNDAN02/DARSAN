@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "532961748681",
+    "project_id": "darsan-ab284",
+    "storage_bucket": "darsan-ab284.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:532961748681:android:16dbe3e7f9d9f4facecf18",
+        "android_client_info": {
+          "package_name": "com.example.darshanapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPTWgCm82R9xi7rYRDUaNO7wEAaIN7yV4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
